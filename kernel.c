@@ -3,12 +3,31 @@
 
 
 void kernel_main(void) {
-	gdt_install();
-	idt_install();
+   int i;
 
-	/* Initialize terminal interface */
-	terminal_initialize();
+   gdt_install();
+   idt_install();
+   isrs_install();
 
-	/* Newline support is left as an exercise. */
-	terminal_writestring("Hello, kernel World!\n");
+   /* Initialize terminal interface */
+   //terminal_initialize();
+
+   init_video();
+
+   __asm__ __volatile__ ("sti");
+
+   cls();
+   //puts("Hello World!\n");
+
+   /* Newline support is left as an exercise. */
+   //terminal_writestring("Hello, kernel World!\n");
+
+   int x = 5;
+   int y = 0;
+   int z = x / y;
+   putch(z);
+
+   //terminal_writestring("Hello, kernel World!\n");
+
+   while (1) ;
 }

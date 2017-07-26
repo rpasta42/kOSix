@@ -20,8 +20,6 @@ void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, uns
       idt[num].sel = sel;
       idt[num].always0 = 0;
       idt[num].flags = flags;
-
-
 }
 
 /* Installs the IDT */
@@ -29,10 +27,10 @@ void idt_install()
 {
     /* Sets the special IDT pointer up, just like in 'gdt.c' */
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
-    idtp.base = &idt;
+    idtp.base = (unsigned int)&idt;
 
     /* Clear out the entire IDT, initializing it to zeros */
-    memset(&idt, 0, sizeof(struct idt_entry) * 256);
+    memset((char*)&idt, 0, sizeof(struct idt_entry) * 256);
 
     /* Add any new ISRs to the IDT here using idt_set_gate */
 

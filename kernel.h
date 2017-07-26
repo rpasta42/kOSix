@@ -1,9 +1,12 @@
 #ifndef KERNEL_H_INCLUDE
 #define KERNEL_H_INCLUDE
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
+//#include <stdbool.h>
+//#include <stddef.h>
+//#include <stdint.h>
+typedef unsigned int size_t;
+typedef char uint8_t;
+typedef short uint16_t;
 
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -50,7 +53,6 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 
 
 /*********************END VGA*************************/
-
 
 
 /*************************GDT*************************/
@@ -127,6 +129,9 @@ struct idt_ptr idtp;
 size_t strlen(const char* str);
 unsigned char *memset(unsigned char *dest, unsigned char val, int count);
 
+
+
+
 /*********************END UTILS*************************/
 
 
@@ -135,7 +140,31 @@ unsigned char *memset(unsigned char *dest, unsigned char val, int count);
 void terminal_initialize(void);
 void terminal_writestring(const char* data);
 
+void init_video(void);
+void puts(unsigned char *text);
+
+
 /*********************END TERM*************************/
+
+
+/*************************ISRS*************************/
+
+void isrs_install();
+
+/* This defines what the stack looks like after an ISR was running */
+struct regs
+{
+    unsigned int gs, fs, es, ds;      /* pushed the segs last */
+    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
+    unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
+    unsigned int eip, cs, eflags, useresp, ss;   /* pushed by the processor automatically */
+};
+
+
+void fault_handler(struct regs *r);
+
+/*********************END ISRS*************************/
+
 
 
 
