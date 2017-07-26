@@ -46,6 +46,11 @@ void outportb (unsigned short _port, unsigned char _data)
     __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
+
+void _test_user_function() {
+
+}
+
 void main()
 {
     int i;
@@ -58,7 +63,7 @@ void main()
     timer_install();
     keyboard_install();
 
-    __asm__ __volatile__ ("sti");
+    __asm__ __volatile__ ("cli");
 
     puts("Hello World!\n");
 
