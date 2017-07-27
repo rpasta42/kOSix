@@ -102,9 +102,9 @@ user_int_syscall:
    push ecx
    call syscall_handler
 
-   pop ecx
-   pop ebx
-   pop eax
+   ;pop ecx
+   ;pop ebx
+   ;pop eax
 
    ;jmp syscall_handler
 
@@ -113,6 +113,8 @@ user_int_syscall:
 
    ;at the end
    sti
+
+   iretd
 
 
 
