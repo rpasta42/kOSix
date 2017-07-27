@@ -20,6 +20,33 @@ typedef unsigned int uint32_t;
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
 
+#define PACKED __attribute__((packed))
+#define ASM(x) __asm__ __volatile__(x)
+#define true 1
+#define false 0
+
+/*************************PROTECT*************************/
+void _test_user_function();
+void set_kernel_stack();
+struct gdt_entry;
+void setup_protect_segments(struct gdt_entry* gdt);
+struct gdt_entry_bits;
+void write_tss(struct gdt_entry_bits *g);
+
+/*********************END PROTECT*************************/
+
+
+/*************************SERIAL*************************/
+void init_serial();
+int serial_received();
+char read_serial();
+
+int is_transmit_empty();
+void write_serial(char a);
+
+/*********************END SERIAL*************************/
+
+
 /*************************VGA*************************/
 
 /* Hardware text mode color constants. */
@@ -59,9 +86,7 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 
 /*************************GDT*************************/
 
-#define NUM_GDT 3
-#define PACKED __attribute__((packed))
-#define ASM(x) __asm__ __volatile__(x)
+#define NUM_GDT 6 //5
 
 void gdt_install();
 
@@ -111,14 +136,6 @@ struct idt_ptr {
     unsigned int base;
 } PACKED;
 
-/* Declare an IDT of 256 entries. Although we will only use the
-*  first 32 entries in this tutorial, the rest exists as a bit
-*  of a trap. If any undefined IDT entry is hit, it normally
-*  will cause an "Unhandled Interrupt" exception. Any descriptor
-*  for which the 'presence' bit is cleared (0) will generate an
-*  "Unhandled Interrupt" exception */
-struct idt_entry idt[256];
-struct idt_ptr idtp;
 
 
 /*********************END IDT*************************/

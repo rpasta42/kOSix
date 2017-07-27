@@ -19,6 +19,8 @@ void kernel_main(void) {
 
    init_paging();
 
+   init_serial();
+
    __asm__ __volatile__ ("sti"); //sti
 
    //cls();
@@ -31,6 +33,9 @@ void kernel_main(void) {
    //putch(i);
 
    //terminal_writestring("Hello, kernel World!\n");
+
+   //_test_user_function();
+   _jump_usermode();
 
    while (1) ;
 }

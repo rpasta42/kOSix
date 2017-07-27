@@ -18,18 +18,19 @@ extern void gdt_flush();
 
 /* Setup a descriptor in the Global Descriptor Table */
 void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran) {
-    /* Setup the descriptor base address */
-    gdt[num].base_low = (base & 0xFFFF);
-    gdt[num].base_middle = (base >> 16) & 0xFF;
-    gdt[num].base_high = (base >> 24) & 0xFF;
+   /* Setup the descriptor base address */
+   gdt[num].base_low = (base & 0xFFFF);
+   gdt[num].base_middle = (base >> 16) & 0xFF;
+   gdt[num].base_high = (base >> 24) & 0xFF;
 
-    /* Setup the descriptor limits */
-    gdt[num].limit_low = (limit & 0xFFFF);
-    gdt[num].granularity = ((limit >> 16) & 0x0F);
+   /* Setup the descriptor limits */
+   gdt[num].limit_low = (limit & 0xFFFF);
+   gdt[num].granularity = ((limit >> 16) & 0x0F);
 
-    /* Finally, set up the granularity and access flags */
-    gdt[num].granularity |= (gran & 0xF0);
-    gdt[num].access = access;
+   /* Finally, set up the granularity and access flags */
+   gdt[num].granularity |= (gran & 0xF0);
+   gdt[num].access = access;
+
 }
 
 /* Should be called by main. This will setup the special GDT
@@ -58,6 +59,15 @@ void gdt_install() {
     gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 
     /* Flush out the old GDT and install the new changes! */
-    gdt_flush();
+
+   setup_protect_segments(gdt);
+
+   gdt_flush();
+
+
+   puts("test");
+
+   //for protect segment
+   tss_flush(); //flush_tss(); //implement this later
 }
 

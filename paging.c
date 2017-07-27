@@ -40,3 +40,4 @@ void init_paging() {
    load_page_directory(page_directory);
    enable_paging();
 }
+
