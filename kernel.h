@@ -7,6 +7,8 @@
 typedef unsigned int size_t;
 typedef char uint8_t;
 typedef short uint16_t;
+typedef unsigned int uint32_t;
+
 
 /* Check if the compiler thinks we are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -58,6 +60,8 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 /*************************GDT*************************/
 
 #define NUM_GDT 3
+#define PACKED __attribute__((packed))
+#define ASM(x) __asm__ __volatile__(x)
 
 void gdt_install();
 
@@ -74,14 +78,14 @@ struct gdt_entry {
     unsigned char access;
     unsigned char granularity;
     unsigned char base_high;
-} __attribute__((packed));
+} PACKED;
 
 /* Special pointer which includes the limit: The max bytes
 *  taken up by the GDT, minus 1. Again, this NEEDS to be packed */
 struct gdt_ptr {
     unsigned short limit;
     unsigned int base;
-} __attribute__((packed));
+} PACKED;
 
 
 extern void gdt_flush();
@@ -100,12 +104,12 @@ struct idt_entry {
     unsigned char always0;     /* This will ALWAYS be set to 0! */
     unsigned char flags;       /* Set using the above table! */
     unsigned short base_hi;
-} __attribute__((packed));
+} PACKED;
 
 struct idt_ptr {
     unsigned short limit;
     unsigned int base;
-} __attribute__((packed));
+} PACKED;
 
 /* Declare an IDT of 256 entries. Although we will only use the
 *  first 32 entries in this tutorial, the rest exists as a bit
@@ -126,8 +130,6 @@ size_t strlen(const char* str);
 void* memset(void *dest, char val, size_t count);
 void* memcpy(void* dest, const void* src, size_t count);
 
-
-
 /*********************END UTILS*************************/
 
 
@@ -139,7 +141,6 @@ void terminal_writestring(const char* data);
 void init_video(void);
 void puts(unsigned char *text);
 
-
 /*********************END TERM*************************/
 
 
@@ -148,8 +149,7 @@ void puts(unsigned char *text);
 void isrs_install();
 
 /* This defines what the stack looks like after an ISR was running */
-struct regs
-{
+struct regs {
     unsigned int gs, fs, es, ds;      /* pushed the segs last */
     unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;  /* pushed by 'pusha' */
     unsigned int int_no, err_code;    /* our 'push byte #' and ecodes do this */
@@ -170,14 +170,6 @@ void irq_install();
 /*********************END IRQ*************************/
 
 
-/*************************IRQ*************************/
-
-void irq_handler(struct regs *r);
-void irq_install();
-
-/*********************END IRQ*************************/
-
-
 /*************************TIMER*************************/
 
 void timer_handler(struct regs *r);
@@ -188,8 +180,18 @@ void timer_wait(int ticks);
 
 
 /*************************KB*************************/
+
 void keyboard_install();
+
 /*********************END KB*************************/
+
+
+/*************************PAGING*************************/
+
+void init_paging();
+
+/*********************END PAGING*************************/
+
 
 
 

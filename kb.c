@@ -79,6 +79,12 @@ void keyboard_handler(struct regs *r) {
         *  held. If shift is held using the larger lookup table,
         *  you would add 128 to the scancode when you look for it */
         putch(kbdus[scancode]);
+
+        char key = kbdus[scancode];
+        if (key == 'z') {
+            int i = 0;
+            putch(10/i);
+        }
     }
 }
 

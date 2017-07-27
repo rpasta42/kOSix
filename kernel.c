@@ -17,6 +17,8 @@ void kernel_main(void) {
    timer_install();
    keyboard_install();
 
+   init_paging();
+
    __asm__ __volatile__ ("sti"); //sti
 
    //cls();
