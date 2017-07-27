@@ -33,6 +33,8 @@ void setup_protect_segments(struct gdt_entry* gdt);
 struct gdt_entry_bits;
 void write_tss(struct gdt_entry_bits *g);
 
+void syscall_handler();
+
 /*********************END PROTECT*************************/
 
 

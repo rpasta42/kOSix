@@ -48,6 +48,11 @@ extern void isr31();
 void isrs_install()
 {
     idt_set_gate(0, (unsigned)isr0, 0x08, 0x8E);
+
+    //we're gun send syscalls using second isr1 interrupt nuf' said
+    idt_set_gate(1, (unsigned)isr1, 0x08, 0x8E);
+
+
     idt_set_gate(1, (unsigned)isr1, 0x08, 0x8E);
     idt_set_gate(2, (unsigned)isr2, 0x08, 0x8E);
     idt_set_gate(3, (unsigned)isr3, 0x08, 0x8E);
@@ -170,6 +175,7 @@ void fault_handler(struct regs *r) {
 
         puts(exception_messages[r->int_no]);
         puts(" Exception. System Halted!\n");
+        putch(digit_to_str(r->int_no));
 
         for (;;);
     }

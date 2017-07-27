@@ -34,6 +34,9 @@ void kernel_main(void) {
 
    //terminal_writestring("Hello, kernel World!\n");
 
+    //ASM("int $0x1"); should print debug exception in kernel mode
+
+
    //_test_user_function();
    _jump_usermode();
 

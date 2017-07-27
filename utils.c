@@ -60,4 +60,15 @@ void outportb (unsigned short _port, unsigned char _data) {
    __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
+char digit_to_str(int i) {
+   return (char)i + '0';
+}
+
+void print_int(int i) {
+   if (i < 0)
+      putch('-');
+
+   //if
+}
+
 

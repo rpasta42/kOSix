@@ -64,9 +64,6 @@ void gdt_install() {
 
    gdt_flush();
 
-
-   puts("test");
-
    //for protect segment
    tss_flush(); //flush_tss(); //implement this later
 }

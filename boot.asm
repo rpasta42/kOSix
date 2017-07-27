@@ -81,6 +81,41 @@ idt_load:
     ret
 
 ; Interrupt Service Routines (ISRs) right here!
+user_int_syscall:
+    ;push byte 0
+    ;push byte 1
+   pushad
+   ;pushad
+
+   extern putch
+   extern syscall_handler
+
+   ;push eax
+   ;call putch
+   ;pop eax
+   ;push ebx
+   ;call putch
+   ;pop ebx
+
+   push eax
+   push ebx
+   push ecx
+   call syscall_handler
+
+   pop ecx
+   pop ebx
+   pop eax
+
+   ;jmp syscall_handler
+
+   popad
+
+
+   ;at the end
+   sti
+
+
+
 global isr0
 global isr1
 global isr2
@@ -128,6 +163,8 @@ isr1:
     push byte 0
     push byte 1
     jmp isr_common_stub
+
+
 
 ;  2: Non Maskable Interrupt Exception
 isr2:
@@ -206,7 +243,9 @@ isr12:
 isr13:
     cli
     push byte 13
-    jmp isr_common_stub
+
+    jmp user_int_syscall
+    ;jmp isr_common_stub
 
 ; 14: Page Fault Exception (With Error Code!)
 isr14:

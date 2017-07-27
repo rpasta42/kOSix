@@ -30,11 +30,13 @@ void init_paging() {
    }
 
    for (i = 0; i < 1024; i++) {
-      page_table1[i] = (i * 0x1000) | 3; //supervisor level, read/write, present
+      //todo: page_table1 was 3, but segfaults
+      page_table1[i] = (i * 0x1000) | 7; //supervisor level (was 3), read/write, present
       page_table2[i] = (i * 0x1000) | 7; //user level, read/write, present
    }
 
-   page_directory[0] = ((unsigned int)page_table1) | 3;
+   //TODO: page_directory[0] was 3 but that segfaults in user mode
+   page_directory[0] = ((unsigned int)page_table1) | 7; //3
    page_directory[1] = ((unsigned int)page_table2) | 7;
 
    load_page_directory(page_directory);

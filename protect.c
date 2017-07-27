@@ -87,8 +87,6 @@ void setup_protect_segments(struct gdt_entry* gdt) {
    //...go on to install GDT segments and such
    //after those are installed we'll tell the CPU where our TSS is:
    //tss_flush();
-
-
 }
 
 /**Ok, this is going to be hackish, but we will salvage the gdt_entry_bits struct to form our TSS descriptor
@@ -126,19 +124,6 @@ void write_tss(struct gdt_entry_bits *g) {
    //uint32_t* ss0 = &(tss_entry.ss0);
    //uint32_t* esp0 = &(tss_entry.esp0);
 
-/*
-   uint32_t ss0;
-   __asm__ __volatile__("mov %0, %%ss"
-       : "=r" (ss0));
-   tss_entry.ss0 = ss0;
-
-
-   uint32_t esp0;
-   __asm__ __volatile__("mov %0, %%esp"
-       : "=r" (esp0));
-   tss_entry.esp0 = esp0;
-*/
-
    uint32_t ss0;
    __asm__ __volatile__("mov %%ss, %0"
        : "=r" (ss0));
@@ -169,9 +154,43 @@ void set_kernel_stack(uint32_t stack) //this will update the ESP0 stack used whe
 void _test_user_function() {
    //ASM("cli");
    //puts("hi");
+   //ASM("int $0x80");
+   //ASM("mov $0x61, %eax");
+
+   ASM("mov $0x61, %eax"); //letter a
+   ASM("mov $0x62, %ebx"); //letter b
+   ASM("mov $0x63, %ecx"); //letter c
+
+   //ASM("pushal"); //pushad in intel
+
+   ASM("int $0x1");
+
    while (true) ;
 }
 
 /*void jump_usermode() {
 }*/
+
+
+void syscall_handler(int a, int b, int c) {
+   puts("syscall\n");
+   //ASM("popal"); //pushad in intel
+
+/*
+   uint32_t eax;
+
+   __asm__ __volatile__("mov %%eax, %0"
+       : "=r" (eax));
+
+   putch((char)eax);*/
+   putch(a);
+   putch(b);
+   putch(c);
+   puts("\n");
+   puts("syscall");
+
+}
+
+
+
 
