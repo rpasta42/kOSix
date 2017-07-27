@@ -2,7 +2,7 @@ let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 argglobal
 setlocal keymap=
 setlocal noarabic
-setlocal noautoindent
+setlocal autoindent
 setlocal backupcopy=
 setlocal nobinary
 setlocal nobreakindent
@@ -162,6 +162,9 @@ silent! normal! zE
 491,496fold
 385,497fold
 501,526fold
+73,528fold
+73
+normal! zo
 117
 normal! zo
 117
@@ -170,12 +173,12 @@ normal! zc
 normal! zo
 385
 normal! zc
-let s:l = 343 - ((268 * winheight(0) + 16) / 33)
+let s:l = 341 - ((322 * winheight(0) + 33) / 66)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-343
-normal! 0
+341
+normal! 041|
 let &so = s:so_save | let &siso = s:siso_save
 doautoall SessionLoadPost
 " vim: set ft=vim :
