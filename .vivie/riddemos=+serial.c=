@@ -31,7 +31,7 @@ setlocal dictionary=
 setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
-setlocal noexpandtab
+setlocal expandtab
 if &filetype != 'c'
 setlocal filetype=c
 endif
@@ -98,7 +98,7 @@ endif
 setlocal tabstop=6
 setlocal tagcase=
 setlocal tags=
-setlocal textwidth=0
+setlocal textwidth=90
 setlocal thesaurus=
 setlocal noundofile
 setlocal undolevels=-123456
@@ -107,12 +107,17 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 38 - ((30 * winheight(0) + 16) / 33)
+5,13fold
+16,18fold
+20,24fold
+28,30fold
+32,36fold
+let s:l = 16 - ((11 * winheight(0) + 11) / 22)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-38
-normal! 020|
+16
+normal! 0
 let &so = s:so_save | let &siso = s:siso_save
 doautoall SessionLoadPost
 " vim: set ft=vim :
