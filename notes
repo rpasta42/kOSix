@@ -1,0 +1,80 @@
+
+
+contains code when user jumps into kernel code (transition to kernel go through this file)
+	kernel/mpx386.s .................. pg 707
+
+very low level, works together with kernel/mpx386.s
+	proc.c
+
+
+	kernel/mpx386.s and start.c sets up environment for main
+
+
+
+
+	
+
+
+
+
+GDT:
+	http://wiki.osdev.org/GDT_Tutorial
+	https://en.wikipedia.org/wiki/Global_Descriptor_Table
+	http://www.osdever.net/bkerndev/Docs/gdt.htm
+	http://wiki.osdev.org/GDT
+	http://wiki.osdev.org/Segmentation#INT
+
+
+
+Paging:
+	http://wiki.osdev.org/Setting_Up_Paging
+	https://en.wikipedia.org/wiki/Paging
+	http://wiki.osdev.org/Paging
+	http://wiki.osdev.org/Identity_Paging
+	https://en.wikipedia.org/wiki/Control_register
+	http://wiki.osdev.org/Higher_Half_Kernel
+	http://wiki.osdev.org/Page_Tables
+	http://wiki.osdev.org/Page_Frame_Allocation
+	http://wiki.osdev.org/Writing_A_Page_Frame_Allocator
+	
+memory management:
+	http://wiki.osdev.org/Writing_a_memory_manager
+	http://wiki.osdev.org/Memory_Management_Unit
+
+Protected Mode:
+	http://wiki.osdev.org/Getting_to_Ring_3
+	http://wiki.osdev.org/Context_Switching
+	http://wiki.osdev.org/System_Calls
+	http://wiki.osdev.org/Protected_mode
+	https://stackoverflow.com/questions/6892421/switching-to-user-mode-using-iret
+	TSS:
+		http://wiki.osdev.org/Task_State_Segment
+
+using ld:
+	https://sourceware.org/binutils/docs-2.20/ld/Scripts.html
+	https://www.math.utah.edu/docs/info/ld_3.html
+
+
+keyboard:
+	http://www.osdever.net/bkerndev/Docs/keyboard.htm
+
+interrupts:
+	8259 PIC = Programmable Interrupt Controller
+		http://wiki.osdev.org/PIC
+	Interrupt Descriptor Table
+		http://wiki.osdev.org/IDT
+		http://www.osdever.net/bkerndev/Docs/irqs.htm
+	PIT: A System Clock
+		http://www.osdever.net/bkerndev/Docs/pit.htm
+
+good tutorial:
+	http://www.osdever.net/bkerndev/Docs/whatsleft.htm
+
+
+misc
+	http://wiki.osdev.org/Exceptions
+	http://wiki.osdev.org/Tutorials
+	http://x86.renejeschke.de/html/file_module_x86_id_145.html
+	http://wiki.osdev.org/Category:Tutorials
+
+

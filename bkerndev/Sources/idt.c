@@ -49,8 +49,7 @@ void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, uns
 }
 
 /* Installs the IDT */
-void idt_install()
-{
+void idt_install() {
     /* Sets the special IDT pointer up, just like in 'gdt.c' */
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
     idtp.base = &idt;
@@ -65,3 +64,4 @@ void idt_install()
     /* Points the processor's internal register to the new IDT */
     idt_load();
 }
+
