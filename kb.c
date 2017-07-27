@@ -81,7 +81,7 @@ void keyboard_handler(struct regs *r) {
         putch(kbdus[scancode]);
 
         char key = kbdus[scancode];
-        if (key == 'z') {
+        if (key == 'z') { //cause exception when user types in z
             int i = 0;
             putch(10/i);
         }

@@ -16,7 +16,9 @@ extern void load_page_directory(unsigned int*);
 extern void enable_paging();
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
-uint32_t first_page_table[1024] __attribute__((aligned(4096)));
+uint32_t page_table1[1024] __attribute__((aligned(4096))); /* kernel */
+uint32_t page_table2[1024] __attribute__((aligned(4096))); /* user */
+
 
 void init_paging() {
    int i;
@@ -28,10 +30,12 @@ void init_paging() {
    }
 
    for (i = 0; i < 1024; i++) {
-      first_page_table[i] = (i * 0x1000) | 3; //supervisor level, read/write, present
+      page_table1[i] = (i * 0x1000) | 3; //supervisor level, read/write, present
+      page_table2[i] = (i * 0x1000) | 7; //user level, read/write, present
    }
 
-   page_directory[0] = ((unsigned int)first_page_table) | 3;
+   page_directory[0] = ((unsigned int)page_table1) | 3;
+   page_directory[1] = ((unsigned int)page_table2) | 7;
 
    load_page_directory(page_directory);
    enable_paging();
