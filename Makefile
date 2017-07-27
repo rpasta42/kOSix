@@ -22,7 +22,7 @@ iso: kosix.bin
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 
-kosix.bin: gdt.o utils.o term.o idt.o kernel.o boot.o isrs.o
+kosix.bin: gdt.o utils.o term.o idt.o kernel.o boot.o isrs.o kb.o irq.o timer.o
 	$(CC) -T linker.ld -o kosix.bin -ffreestanding -O2 -nostdlib *.o -lgcc
 
 

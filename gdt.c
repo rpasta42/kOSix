@@ -2,9 +2,17 @@
 
 #include "kernel.h"
 
+/* Our GDT, with 3 entries, and finally our special GDT pointer */
+struct gdt_entry gdt[NUM_GDT];
+struct gdt_ptr gp;
+
+
+
 /* This will be a function in start.asm. We use this to properly
 *  reload the new segment registers */
 extern void gdt_flush();
+
+
 
 
 
@@ -31,7 +39,7 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 *  new segment registers */
 void gdt_install() {
     /* Setup the GDT pointer and limit */
-    gp.limit = (sizeof(struct gdt_entry) * 3) - 1;
+    gp.limit = (sizeof(struct gdt_entry) * NUM_GDT) - 1;
     gp.base = (unsigned int)&gdt;
 
     /* Our NULL descriptor */

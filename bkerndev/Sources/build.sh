@@ -8,6 +8,8 @@ nasm -felf32 -o start.o start.asm
 
 #rem Remember this spot here: We will add '$(CC)' commands here to compile C sources
 
+$CC -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o utils.o utils.c
+
 $CC -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o main.o main.c
 
 $CC -Wall -O -fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-builtin -I./include -c -o scrn.o scrn.c

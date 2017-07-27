@@ -33,7 +33,7 @@ void main()
     timer_install();
     keyboard_install();
 
-    __asm__ __volatile__ ("cli");
+    __asm__ __volatile__ ("sti");
 
     puts("Hello World!\n");
 

@@ -57,6 +57,8 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color) {
 
 /*************************GDT*************************/
 
+#define NUM_GDT 3
+
 void gdt_install();
 
 //http://www.osdever.net/bkerndev/Docs/gdt.htm
@@ -81,9 +83,6 @@ struct gdt_ptr {
     unsigned int base;
 } __attribute__((packed));
 
-/* Our GDT, with 3 entries, and finally our special GDT pointer */
-struct gdt_entry gdt[3];
-struct gdt_ptr gp;
 
 extern void gdt_flush();
 
@@ -94,10 +93,8 @@ extern void gdt_flush();
 
 void idt_install();
 
-
 /* Defines an IDT entry */
-struct idt_entry
-{
+struct idt_entry {
     unsigned short base_lo;
     unsigned short sel;        /* Our kernel segment goes here! */
     unsigned char always0;     /* This will ALWAYS be set to 0! */
@@ -105,8 +102,7 @@ struct idt_entry
     unsigned short base_hi;
 } __attribute__((packed));
 
-struct idt_ptr
-{
+struct idt_ptr {
     unsigned short limit;
     unsigned int base;
 } __attribute__((packed));
@@ -127,8 +123,8 @@ struct idt_ptr idtp;
 /*************************UTILS*************************/
 
 size_t strlen(const char* str);
-unsigned char *memset(unsigned char *dest, unsigned char val, int count);
-
+void* memset(void *dest, char val, size_t count);
+void* memcpy(void* dest, const void* src, size_t count);
 
 
 
@@ -165,6 +161,35 @@ void fault_handler(struct regs *r);
 
 /*********************END ISRS*************************/
 
+
+/*************************IRQ*************************/
+
+void irq_handler(struct regs *r);
+void irq_install();
+
+/*********************END IRQ*************************/
+
+
+/*************************IRQ*************************/
+
+void irq_handler(struct regs *r);
+void irq_install();
+
+/*********************END IRQ*************************/
+
+
+/*************************TIMER*************************/
+
+void timer_handler(struct regs *r);
+void timer_install();
+void timer_wait(int ticks);
+
+/*********************END TIMER*************************/
+
+
+/*************************KB*************************/
+void keyboard_install();
+/*********************END KB*************************/
 
 
 

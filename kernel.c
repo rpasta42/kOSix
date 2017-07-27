@@ -8,24 +8,25 @@ void kernel_main(void) {
    gdt_install();
    idt_install();
    isrs_install();
+   irq_install();
 
    /* Initialize terminal interface */
    //terminal_initialize();
-
    init_video();
 
-   __asm__ __volatile__ ("sti");
+   timer_install();
+   keyboard_install();
 
-   cls();
-   //puts("Hello World!\n");
+   __asm__ __volatile__ ("sti"); //sti
+
+   //cls();
+   puts("Hello World!\n");
 
    /* Newline support is left as an exercise. */
    //terminal_writestring("Hello, kernel World!\n");
 
-   int x = 5;
-   int y = 0;
-   int z = x / y;
-   putch(z);
+   //i = 10 / 0;
+   //putch(i);
 
    //terminal_writestring("Hello, kernel World!\n");
 

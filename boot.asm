@@ -1,126 +1,76 @@
-; Declare constants for the multiboot header.
-MBALIGN  equ  1<<0              ; align loaded modules on page boundaries
-MEMINFO  equ  1<<1              ; provide memory map
-FLAGS    equ  MBALIGN | MEMINFO ; this is the Multiboot 'flag' field
-MAGIC    equ  0x1BADB002        ; 'magic number' lets bootloader find the header
-CHECKSUM equ -(MAGIC + FLAGS)   ; checksum of above, to prove we are multiboot
+; bkerndev - Bran's Kernel Development Tutorial
+; By:   Brandon F. (friesenb@gmail.com)
+; Desc: Kernel entry point, stack, and Interrupt Service Routines.
+;
+; Notes: No warranty expressed or implied. Use at own risk.
+;
+; This is the kernel's entry point. We could either call main here,
+; or we can use this to setup the stack or other nice stuff, like
+; perhaps setting up the GDT and segments. Please note that interrupts
+; are disabled at this point: More on interrupts later!
+[BITS 32]
+global start
+start:
+    mov esp, _sys_stack     ; This points the stack to our new stack area
+    jmp stublet
 
-; Declare a multiboot header that marks the program as a kernel. These are magic
-; values that are documented in the multiboot standard. The bootloader will
-; search for this signature in the first 8 KiB of the kernel file, aligned at a
-; 32-bit boundary. The signature is in its own section so the header can be
-; forced to be within the first 8 KiB of the kernel file.
-section .multiboot
-align 4
-	dd MAGIC
-	dd FLAGS
-	dd CHECKSUM
+; This part MUST be 4byte aligned, so we solve that issue using 'ALIGN 4'
+ALIGN 4
+mboot:
+    ; Multiboot macros to make a few lines later more readable
+    MULTIBOOT_PAGE_ALIGN	equ 1<<0
+    MULTIBOOT_MEMORY_INFO	equ 1<<1
+    MULTIBOOT_AOUT_KLUDGE	equ 1<<16
+    MULTIBOOT_HEADER_MAGIC	equ 0x1BADB002
+    MULTIBOOT_HEADER_FLAGS	equ MULTIBOOT_PAGE_ALIGN | MULTIBOOT_MEMORY_INFO | MULTIBOOT_AOUT_KLUDGE
+    MULTIBOOT_CHECKSUM	equ -(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
+    EXTERN code, bss, end
 
-; The multiboot standard does not define the value of the stack pointer register
-; (esp) and it is up to the kernel to provide a stack. This allocates room for a
-; small stack by creating a symbol at the bottom of it, then allocating 16384
-; bytes for it, and finally creating a symbol at the top. The stack grows
-; downwards on x86. The stack is in its own section so it can be marked nobits,
-; which means the kernel file is smaller because it does not contain an
-; uninitialized stack. The stack on x86 must be 16-byte aligned according to the
-; System V ABI standard and de-facto extensions. The compiler will assume the
-; stack is properly aligned and failure to align the stack will result in
-; undefined behavior.
-section .bss
-align 4
-stack_bottom:
-resb 16384 ; 16 KiB
-stack_top:
+    ; This is the GRUB Multiboot header. A boot signature
+    dd MULTIBOOT_HEADER_MAGIC
+    dd MULTIBOOT_HEADER_FLAGS
+    dd MULTIBOOT_CHECKSUM
 
-; The linker script specifies _start as the entry point to the kernel and the
-; bootloader will jump to this position once the kernel has been loaded. It
-; doesn't make sense to return from this function as the bootloader is gone.
-; Declare _start as a function symbol with the given symbol size.
-section .text
-global _start:function (_start.end - _start)
-_start:
-	; The bootloader has loaded us into 32-bit protected mode on a x86
-	; machine. Interrupts are disabled. Paging is disabled. The processor
-	; state is as defined in the multiboot standard. The kernel has full
-	; control of the CPU. The kernel can only make use of hardware features
-	; and any code it provides as part of itself. There's no printf
-	; function, unless the kernel provides its own <stdio.h> header and a
-	; printf implementation. There are no security restrictions, no
-	; safeguards, no debugging mechanisms, only what the kernel provides
-	; itself. It has absolute and complete power over the
-	; machine.
+    ; AOUT kludge - must be physical addresses. Make a note of these:
+    ; The linker script fills in the data for these ones!
+    dd mboot
+    dd code
+    dd bss
+    dd end
+    dd start
 
-	; To set up a stack, we set the esp register to point to the top of our
-	; stack (as it grows downwards on x86 systems). This is necessarily done
-	; in assembly as languages such as C cannot function without a stack.
-	mov esp, stack_top
+; This is an endless loop here. Make a note of this: Later on, we
+; will insert an 'extern _main', followed by 'call _main', right
+; before the 'jmp $'.
+stublet:
+    extern kernel_main
+    call kernel_main
+    jmp $
 
-	; This is a good place to initialize crucial processor state before the
-	; high-level kernel is entered. It's best to minimize the early
-	; environment where crucial features are offline. Note that the
-	; processor is not fully initialized yet: Features such as floating
-	; point instructions and instruction set extensions are not initialized
-	; yet. The GDT should be loaded here. Paging should be enabled here.
-	; C++ features such as global constructors and exceptions will require
-	; runtime support to work as well.
-
-
-
-	; Enter the high-level kernel. The ABI requires the stack is 16-byte
-	; aligned at the time of the call instruction (which afterwards pushes
-	; the return pointer of size 4 bytes). The stack was originally 16-byte
-	; aligned above and we've since pushed a multiple of 16 bytes to the
-	; stack since (pushed 0 bytes so far) and the alignment is thus
-	; preserved and the call is well defined.
-        ; note, that if you are building on Windows, C functions may have "_" prefix in assembly: _kernel_main
-	extern kernel_main
-	call kernel_main
-
-	; If the system has nothing more to do, put the computer into an
-	; infinite loop. To do that:
-	; 1) Disable interrupts with cli (clear interrupt enable in eflags).
-	;    They are already disabled by the bootloader, so this is not needed.
-	;    Mind that you might later enable interrupts and return from
-	;    kernel_main (which is sort of nonsensical to do).
-	; 2) Wait for the next interrupt to arrive with hlt (halt instruction).
-	;    Since they are disabled, this will lock up the computer.
-	; 3) Jump to the hlt instruction if it ever wakes up due to a
-	;    non-maskable interrupt occurring or due to system management mode.
-	cli
-.hang:	hlt
-	jmp .hang
-.end:
-
-
-;;;;;;;;;;;
-
-;http://www.osdever.net/bkerndev/Docs/gdt.htm
-;kk: remove underscores so linker works
 
 ;;;;;;;GDT
-
 
 ; This will set up our new segment registers. We need to do
 ; something special in order to set CS. We do what is called a
 ; far jump. A jump that includes a segment as well as an offset.
 ; This is declared in C as 'extern void gdt_flush();'
-global gdt_flush     ; Allows the C code to link to this
-extern gp            ; Says that '_gp' is in another file
+global gdt_flush
+extern gp
 gdt_flush:
-    lgdt [gp]        ; Load the GDT with our '_gp' which is a special pointer
-    mov ax, 0x10      ; 0x10 is the offset in the GDT to our data segment
+    lgdt [gp]
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    jmp 0x08:flush2   ; 0x08 is the offset to our code segment: Far jump!
+    jmp 0x08:flush2
 flush2:
-    ret               ; Returns back to the C code!
+    ret
 
+;;;;;;;END GDT
 
-
-;;;;;;;IDT
+;;;;;;;IDT/irq/isr
 
 ; Loads the IDT defined in '_idtp' into the processor.
 ; This is declared in C as 'extern void idt_load();'
@@ -130,10 +80,7 @@ idt_load:
     lidt [idtp]
     ret
 
-
-;;;;;;;Interrupt Service Routines (ISRs)
-; In just a few pages in this tutorial, we will add our Interrupt
-; Service Routines (ISRs) right here!
+; Interrupt Service Routines (ISRs) right here!
 global isr0
 global isr1
 global isr2
@@ -167,13 +114,11 @@ global isr29
 global isr30
 global isr31
 
-;;;;isr's
 
 ;  0: Divide By Zero Exception
 isr0:
     cli
-    push byte 0    ; A normal ISR stub that pops a dummy error code to keep a
-                   ; uniform stack frame
+    push byte 0
     push byte 0
     jmp isr_common_stub
 
@@ -184,140 +129,210 @@ isr1:
     push byte 1
     jmp isr_common_stub
 
-
+;  2: Non Maskable Interrupt Exception
 isr2:
-	cli
-	push byte 0
-	push byte 2
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 2
+    jmp isr_common_stub
 
+;  3: Int 3 Exception
 isr3:
-	cli
-	push byte 0
-	push byte 3
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 3
+    jmp isr_common_stub
 
+;  4: INTO Exception
 isr4:
-	cli
-	push byte 0
-	push byte 4
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 4
+    jmp isr_common_stub
 
+;  5: Out of Bounds Exception
 isr5:
-	cli
-	push byte 0
-	push byte 5
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 5
+    jmp isr_common_stub
 
+;  6: Invalid Opcode Exception
 isr6:
-	cli
-	push byte 0
-	push byte 6
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 6
+    jmp isr_common_stub
 
+;  7: Coprocessor Not Available Exception
 isr7:
-	cli
-	push byte 0
-	push byte 7
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 7
+    jmp isr_common_stub
 
 ;  8: Double Fault Exception (With Error Code!)
 isr8:
     cli
-    push byte 8        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 8
     jmp isr_common_stub
 
+;  9: Coprocessor Segment Overrun Exception
 isr9:
-	cli
-	push byte 0
-	push byte 9
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 9
+    jmp isr_common_stub
 
-
+; 10: Bad TSS Exception (With Error Code!)
 isr10:
     cli
-    push byte 10        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 10
     jmp isr_common_stub
 
+; 11: Segment Not Present Exception (With Error Code!)
 isr11:
     cli
-    push byte 11        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 11
     jmp isr_common_stub
 
+; 12: Stack Fault Exception (With Error Code!)
 isr12:
     cli
-    push byte 12        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 12
     jmp isr_common_stub
 
+; 13: General Protection Fault Exception (With Error Code!)
 isr13:
     cli
-    push byte 13        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 13
     jmp isr_common_stub
 
+; 14: Page Fault Exception (With Error Code!)
 isr14:
     cli
-    push byte 14        ; Note that we DON'T push a value on the stack in this one!
-                   ; It pushes one already! Use this type of stub for exceptions
-                   ; that pop error codes!
+    push byte 14
     jmp isr_common_stub
 
+; 15: Reserved Exception
 isr15:
-	cli
-	push byte 0
-	push byte 15
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 15
+    jmp isr_common_stub
 
+; 16: Floating Point Exception
 isr16:
-	cli
-	push byte 0
-	push byte 16
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 16
+    jmp isr_common_stub
 
-
+; 17: Alignment Check Exception
 isr17:
-	cli
-	push byte 0
-	push byte 17
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 17
+    jmp isr_common_stub
 
+; 18: Machine Check Exception
 isr18:
-	cli
-	push byte 0
-	push byte 18
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 18
+    jmp isr_common_stub
 
-
+; 19: Reserved
 isr19:
+    cli
+    push byte 0
+    push byte 19
+    jmp isr_common_stub
+
+; 20: Reserved
 isr20:
+    cli
+    push byte 0
+    push byte 20
+    jmp isr_common_stub
+
+; 21: Reserved
 isr21:
+    cli
+    push byte 0
+    push byte 21
+    jmp isr_common_stub
+
+; 22: Reserved
 isr22:
+    cli
+    push byte 0
+    push byte 22
+    jmp isr_common_stub
+
+; 23: Reserved
 isr23:
+    cli
+    push byte 0
+    push byte 23
+    jmp isr_common_stub
+
+; 24: Reserved
 isr24:
+    cli
+    push byte 0
+    push byte 24
+    jmp isr_common_stub
+
+; 25: Reserved
 isr25:
+    cli
+    push byte 0
+    push byte 25
+    jmp isr_common_stub
+
+; 26: Reserved
 isr26:
+    cli
+    push byte 0
+    push byte 26
+    jmp isr_common_stub
+
+; 27: Reserved
 isr27:
+    cli
+    push byte 0
+    push byte 27
+    jmp isr_common_stub
+
+; 28: Reserved
 isr28:
+    cli
+    push byte 0
+    push byte 28
+    jmp isr_common_stub
+
+; 29: Reserved
 isr29:
+    cli
+    push byte 0
+    push byte 29
+    jmp isr_common_stub
+
+; 30: Reserved
 isr30:
+    cli
+    push byte 0
+    push byte 30
+    jmp isr_common_stub
+
+; 31: Reserved
 isr31:
-	cli
-	push byte 0
-	push byte 1
-	jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 31
+    jmp isr_common_stub
 
-
-; You should fill in from isr9 to isr31 here. Remember to
-; use the correct stubs to handle error codes and push dummies!
 
 ; We call a C function in here. We need to let the assembler know
 ; that '_fault_handler' exists in another file
@@ -332,27 +347,192 @@ isr_common_stub:
     push es
     push fs
     push gs
-    mov ax, 0x10   ; Load the Kernel Data Segment descriptor!
+    mov ax, 0x10
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp   ; Push us the stack
+    mov eax, esp
     push eax
     mov eax, fault_handler
-    call eax       ; A special call, preserves the 'eip' register
+    call eax
     pop eax
     pop gs
     pop fs
     pop es
     pop ds
     popa
-    add esp, 8     ; Cleans up the pushed error code and pushed ISR number
-    iret           ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP!
+    add esp, 8
+    iret
+
+global irq0
+global irq1
+global irq2
+global irq3
+global irq4
+global irq5
+global irq6
+global irq7
+global irq8
+global irq9
+global irq10
+global irq11
+global irq12
+global irq13
+global irq14
+global irq15
 
 
+; 32: IRQ0
+irq0:
+    cli
+    push byte 0
+    push byte 32
+    jmp irq_common_stub
+
+; 33: IRQ1
+irq1:
+    cli
+    push byte 0
+    push byte 33
+    jmp irq_common_stub
+
+; 34: IRQ2
+irq2:
+    cli
+    push byte 0
+    push byte 34
+    jmp irq_common_stub
+
+; 35: IRQ3
+irq3:
+    cli
+    push byte 0
+    push byte 35
+    jmp irq_common_stub
+
+; 36: IRQ4
+irq4:
+    cli
+    push byte 0
+    push byte 36
+    jmp irq_common_stub
+
+; 37: IRQ5
+irq5:
+    cli
+    push byte 0
+    push byte 37
+    jmp irq_common_stub
+
+; 38: IRQ6
+irq6:
+    cli
+    push byte 0
+    push byte 38
+    jmp irq_common_stub
+
+; 39: IRQ7
+irq7:
+    cli
+    push byte 0
+    push byte 39
+    jmp irq_common_stub
+
+; 40: IRQ8
+irq8:
+    cli
+    push byte 0
+    push byte 40
+    jmp irq_common_stub
+
+; 41: IRQ9
+irq9:
+    cli
+    push byte 0
+    push byte 41
+    jmp irq_common_stub
+
+; 42: IRQ10
+irq10:
+    cli
+    push byte 0
+    push byte 42
+    jmp irq_common_stub
+
+; 43: IRQ11
+irq11:
+    cli
+    push byte 0
+    push byte 43
+    jmp irq_common_stub
+
+; 44: IRQ12
+irq12:
+    cli
+    push byte 0
+    push byte 44
+    jmp irq_common_stub
+
+; 45: IRQ13
+irq13:
+    cli
+    push byte 0
+    push byte 45
+    jmp irq_common_stub
+
+; 46: IRQ14
+irq14:
+    cli
+    push byte 0
+    push byte 46
+    jmp irq_common_stub
+
+; 47: IRQ15
+irq15:
+    cli
+    push byte 0
+    push byte 47
+    jmp irq_common_stub
 
 
-;;;;;;;;;;;
+extern irq_handler
 
+irq_common_stub:
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+
+    push eax
+    mov eax, irq_handler
+    call eax
+    pop eax
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8
+    iret
+
+;;;;;;;end IDT/irq/isr
+
+
+; Here is the definition of our BSS section. Right now, we'll use
+; it just to store the stack. Remember that a stack actually grows
+; downwards, so we declare the size of the data before declaring
+; the identifier '_sys_stack'
+SECTION .bss
+    resb 8192               ; This reserves 8KBytes of memory here
+_sys_stack:
 
