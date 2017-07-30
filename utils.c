@@ -60,15 +60,40 @@ void outportb (unsigned short _port, unsigned char _data) {
    __asm__ __volatile__ ("outb %1, %0" : : "dN" (_port), "a" (_data));
 }
 
-char digit_to_str(int i) {
+char digit_to_char(uint8_t i) {
    return (char)i + '0';
 }
 
-void print_int(int i) {
-   if (i < 0)
-      putch('-');
 
-   //if
+/*examples:
+print_int(324);
+putch('\n');
+print_int(47);
+putch('\n');
+print_int(-80);*/
+
+void print_int(int i) {
+   if (i < 0) {
+      putch('-');
+      i = 0-i;
+   }
+
+   uint8_t num_digits = 0;
+   char digits[25]; //no kalloc so 25 digits
+   int j;
+
+   while (i > 0) {
+      uint32_t j = i % 10;
+
+      digits[num_digits++] = digit_to_char(j);
+
+      i -= j;
+      i /= 10;
+   }
+
+   for (j = num_digits-1; j >= 0; j--) {
+      putch(digits[j]);
+   }
 }
 
 

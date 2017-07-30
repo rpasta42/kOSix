@@ -3,6 +3,7 @@
 /* These are function prototypes for all of the exception
 *  handlers: The first 32 entries in the IDT are reserved
 *  by Intel, and are designed to service exceptions! */
+extern void isr80();
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -88,38 +89,17 @@ void isrs_install()
     idt_set_gate(29, (unsigned)isr29, 0x08, 0x8E);
     idt_set_gate(30, (unsigned)isr30, 0x08, 0x8E);
     idt_set_gate(31, (unsigned)isr31, 0x08, 0x8E);
+
+   int user_flag = (1 << 6) | (1 << 5);
+   idt_set_gate(0x80, (unsigned)isr80, 0x08, 0x8E | user_flag);
 }
 
 /* This is a simple string array. It contains the message that
 *  corresponds to each and every exception. We get the correct
 *  message by accessing like:
 *  exception_message[interrupt_number] */
-/*unsigned char *exception_messages1[] =
-{
-    "Division By Zero\n",
-    "Debug\n",
-    "Non Maskable Interrupt\n",
 
-    "..\n", //3
-    "..\n", //4
-    "..\n", //5
-
-    "..\n", "..\n", "..\n", "..\n", "..\n", //6-10
-    "..\n", "..\n", "..\n", "..\n", "..\n", //11-15
-    "..\n", "..\n", "..\n", "..\n", "..\n", //16-20
-    "..\n", "..\n", "..\n", "..\n", "..\n", //21-25
-    "..\n", "..\n", "..\n", "..\n",       //26-29
-
- http://www.osdever.net/bkerndev/Docs/isrs.htm
- Fill in the rest here from our Exceptions table
-
-    "Reserved", //30
-    "Reserved" //31
-};
-*/
-
-char *exception_messages[] =
-{
+char *exception_messages[] = {
     "Division By Zero",
     "Debug",
     "Non Maskable Interrupt",
@@ -166,14 +146,23 @@ char *exception_messages[] =
 *  serviced as a 'locking' mechanism to prevent an IRQ from
 *  happening and messing up kernel data structures */
 void fault_handler(struct regs *r) {
+   puts("fault_handler: ");
+   print_int(r->int_no);
+   putch('\n');
 
     /* Is this a fault whose number is from 0 to 31? */
-    if (r->int_no == 13) {
-      puts("interrupt\n");
+    if (r->int_no == 98 || r->int_no == -0x80) {
+      puts("system call detected!!\n");
       //ASM("popal");
 
-      syscall_handler();
+      uint32_t eax = *(uint32_t*)(0x2000);
+      uint32_t ebx = *(uint32_t*)(0x2004);
+      uint32_t ecx = *(uint32_t*)(0x2008);
+      uint32_t edx = *(uint32_t*)(0x200C);
+
+      syscall_handler(eax, ebx, ecx, edx);
     }
+
     else if (r->int_no < 32) {
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
@@ -181,11 +170,14 @@ void fault_handler(struct regs *r) {
 
         puts(exception_messages[r->int_no]);
         puts(" Exception. System Halted!\n");
-        putch(digit_to_str(r->int_no));
+        //putch(digit_to_str(r->int_no));
+        print_int(r->int_no);
 
         for (;;);
     }
 
+   //while (1) ;
+   return;
 
 }
 

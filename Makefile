@@ -8,7 +8,7 @@ CFLAGS=-fstrength-reduce -fomit-frame-pointer -finline-functions -nostdinc -fno-
 
 default: test
 
-test: kosix.bin
+test: clean kosix.bin
 	qemu-system-i386 -kernel kosix.bin -serial file:kosix.log
 
 #test: iso

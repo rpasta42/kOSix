@@ -118,6 +118,7 @@ user_int_syscall:
 
 
 
+global isr80
 global isr0
 global isr1
 global isr2
@@ -165,7 +166,6 @@ isr1:
     push byte 0
     push byte 1
     jmp isr_common_stub
-
 
 
 ;  2: Non Maskable Interrupt Exception
@@ -375,6 +375,15 @@ isr31:
     jmp isr_common_stub
 
 
+
+
+isr80:
+   cli
+   push byte 0
+   push byte 0x80
+   jmp isr_common_stub
+
+
 ; We call a C function in here. We need to let the assembler know
 ; that '_fault_handler' exists in another file
 extern fault_handler
@@ -385,35 +394,46 @@ extern fault_handler
 isr_common_stub:
    ;pushad
 
-    pusha
-    push ds
-    push es
-    push fs
-    push gs
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, esp
-    push eax
+   mov [0x2000], eax
+   mov [0x2004], ebx
+   mov [0x2008], ecx
+   mov [0x200C], edx
 
-    mov eax, fault_handler
-    call eax
-    ;popad
-    ;call fault_handler
 
-    pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popa
-    add esp, 8
+   pusha
+   push ds
+   push es
+   push fs
+   push gs
+   mov ax, 0x10
+   mov ds, ax
+   mov es, ax
+   mov fs, ax
+   mov gs, ax
+   mov eax, esp
+   push eax
+
+   mov eax, fault_handler
+   call eax
+   ;popad
+   ;call fault_handler
+
+   pop eax
+   pop gs
+   pop fs
+   pop es
+   pop ds
+   popa
+   add esp, 8
 
    ;popad
 
-    iret
+   iret
+;test:
+;   jmp test
+;   popad
+
+
 
 global irq0
 global irq1

@@ -33,7 +33,7 @@ void setup_protect_segments(struct gdt_entry* gdt);
 struct gdt_entry_bits;
 void write_tss(struct gdt_entry_bits *g);
 
-void syscall_handler();
+void syscall_handler(uint32_t a, uint32_t b, uint32_t c, uint32_t d);
 
 /*********************END PROTECT*************************/
 
@@ -148,6 +148,7 @@ struct idt_ptr {
 size_t strlen(const char* str);
 void* memset(void *dest, char val, size_t count);
 void* memcpy(void* dest, const void* src, size_t count);
+void print_int(int i);
 
 /*********************END UTILS*************************/
 

@@ -26,6 +26,8 @@ void kernel_main(void) {
    //cls();
    puts("Hello World!\n");
 
+
+
    /* Newline support is left as an exercise. */
    //terminal_writestring("Hello, kernel World!\n");
 
@@ -42,3 +44,5 @@ void kernel_main(void) {
 
    while (1) ;
 }
+
+

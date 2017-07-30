@@ -143,13 +143,44 @@ void write_tss(struct gdt_entry_bits *g) {
    //note that CS is loaded from the IDT entry and should be the regular kernel code segment
 }
 
-void set_kernel_stack(uint32_t stack) //this will update the ESP0 stack used when an interrupt occurs
-{
+//this will update the ESP0 stack used when an interrupt occurs
+void set_kernel_stack(uint32_t stack) {
    tss_entry.esp0 = stack;
 }
 
 
 
+
+void _user_syscall(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
+   __asm__("movl %0, %%eax"
+                          : /* no outputs */
+                          : "r"(a)
+                          : "%eax", "%ebx", "%ecx", "%edx"
+                          );
+
+   __asm__("movl %0, %%ebx"
+                          : /* no outputs */
+                          : "r"(b)
+                          : "%eax", "%ebx", "%ecx", "%edx"
+                          );
+
+
+   __asm__("movl %0, %%ecx"
+                          : /* no outputs */
+                          : "r"(c)
+                          : "%eax", "%ebx", "%ecx", "%edx"
+                          );
+
+
+   __asm__("movl %0, %%edx"
+                          : /* no outputs */
+                          : "r"(d)
+                          : "%eax", "%ebx", "%ecx", "%edx"
+                          );
+
+   ASM("int $0x80");
+
+}
 
 void _test_user_function() {
    //ASM("cli");
@@ -157,13 +188,19 @@ void _test_user_function() {
    //ASM("int $0x80");
    //ASM("mov $0x61, %eax");
 
-   //ASM("mov $0x61, %eax"); //letter a
-   ASM("mov $0x62, %ebx"); //letter b
-   ASM("mov $0x63, %ecx"); //letter c
+/*
+   ASM("mov $0x1, %eax"); //letter a
+   ASM("mov $0x2, %ebx"); //letter b
+   ASM("mov $0x3, %ecx"); //letter c
 
    //ASM("pushal"); //pushad in intel
+   ASM("int $0x80");
 
-   ASM("int $0x1");
+   ASM("int $0x80");
+   ASM("int $0x80");
+*/
+
+   _user_syscall(1, 2, 3, 4);
 
    while (true) ;
 }
@@ -172,9 +209,23 @@ void _test_user_function() {
 }*/
 
 
-void syscall_handler(int a, int b, int c) {
+void syscall_handler(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
    //puts("syscall\n");
    //ASM("popal"); //pushad in intel
+   puts("eax: ");
+   print_int(a);
+
+   puts("\nebx: ");
+   print_int(b);
+
+   puts("\necx: ");
+   print_int(c);
+
+   puts("\nedx: ");
+   print_int(d);
+
+
+   puts("\n");
 
 /*
    uint32_t eax;
