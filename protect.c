@@ -157,7 +157,7 @@ void _test_user_function() {
    //ASM("int $0x80");
    //ASM("mov $0x61, %eax");
 
-   ASM("mov $0x61, %eax"); //letter a
+   //ASM("mov $0x61, %eax"); //letter a
    ASM("mov $0x62, %ebx"); //letter b
    ASM("mov $0x63, %ecx"); //letter c
 
@@ -173,7 +173,7 @@ void _test_user_function() {
 
 
 void syscall_handler(int a, int b, int c) {
-   puts("syscall\n");
+   //puts("syscall\n");
    //ASM("popal"); //pushad in intel
 
 /*
@@ -183,11 +183,12 @@ void syscall_handler(int a, int b, int c) {
        : "=r" (eax));
 
    putch((char)eax);*/
-   putch(a);
+   /*putch(a);
    putch(b);
    putch(c);
-   puts("\n");
-   puts("syscall");
+   puts("\n");*/
+
+   //puts("syscall");
 
 }
 

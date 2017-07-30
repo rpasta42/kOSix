@@ -168,7 +168,13 @@ char *exception_messages[] =
 void fault_handler(struct regs *r) {
 
     /* Is this a fault whose number is from 0 to 31? */
-    if (r->int_no < 32) {
+    if (r->int_no == 13) {
+      puts("interrupt\n");
+      //ASM("popal");
+
+      syscall_handler();
+    }
+    else if (r->int_no < 32) {
         /* Display the description for the Exception that occurred.
         *  In this tutorial, we will simply halt the system using an
         *  infinite loop */
@@ -179,5 +185,7 @@ void fault_handler(struct regs *r) {
 
         for (;;);
     }
+
+
 }
 

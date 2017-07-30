@@ -102,9 +102,9 @@ user_int_syscall:
    push ecx
    call syscall_handler
 
-   ;pop ecx
-   ;pop ebx
-   ;pop eax
+   pop ecx
+   pop ebx
+   pop eax
 
    ;jmp syscall_handler
 
@@ -246,8 +246,8 @@ isr13:
     cli
     push byte 13
 
-    jmp user_int_syscall
-    ;jmp isr_common_stub
+    ;jmp user_int_syscall
+    jmp isr_common_stub
 
 ; 14: Page Fault Exception (With Error Code!)
 isr14:
@@ -383,6 +383,8 @@ extern fault_handler
 ; up for kernel mode segments, calls the C-level fault handler,
 ; and finally restores the stack frame.
 isr_common_stub:
+   ;pushad
+
     pusha
     push ds
     push es
@@ -395,8 +397,12 @@ isr_common_stub:
     mov gs, ax
     mov eax, esp
     push eax
+
     mov eax, fault_handler
     call eax
+    ;popad
+    ;call fault_handler
+
     pop eax
     pop gs
     pop fs
@@ -404,6 +410,9 @@ isr_common_stub:
     pop ds
     popa
     add esp, 8
+
+   ;popad
+
     iret
 
 global irq0
