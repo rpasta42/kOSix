@@ -107,81 +107,90 @@ setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
+19,40fold
 51,71fold
-84,115fold
-118,123fold
-125,130fold
-132,137fold
-139,144fold
-146,151fold
-153,158fold
-160,165fold
-167,172fold
-174,178fold
-180,185fold
-187,191fold
-193,197fold
-199,203fold
-205,209fold
-211,215fold
-217,222fold
-224,229fold
-231,236fold
-238,243fold
-245,250fold
-252,257fold
-259,264fold
-266,271fold
-273,278fold
-280,285fold
-287,292fold
-294,299fold
-301,306fold
-308,313fold
-315,320fold
-322,327fold
-329,334fold
-117,335fold
-344,366fold
-368,383fold
-386,391fold
-393,398fold
-400,405fold
-407,412fold
-414,419fold
-421,426fold
-428,433fold
-435,440fold
-442,447fold
-449,454fold
-456,461fold
-463,468fold
-470,475fold
-477,482fold
-484,489fold
-491,496fold
-385,497fold
-501,526fold
-73,528fold
-530,553fold
+84,117fold
+121,152fold
+155,160fold
+162,168fold
+171,176fold
+178,183fold
+185,190fold
+192,197fold
+199,204fold
+206,211fold
+213,217fold
+219,224fold
+226,230fold
+232,236fold
+238,242fold
+244,250fold
+252,256fold
+258,263fold
+265,270fold
+272,277fold
+279,284fold
+286,291fold
+293,298fold
+300,305fold
+307,312fold
+314,319fold
+321,326fold
+328,333fold
+335,340fold
+342,347fold
+349,354fold
+356,361fold
+363,368fold
+370,375fold
+154,376fold
+388,416fold
+418,433fold
+436,441fold
+443,448fold
+450,455fold
+457,462fold
+464,469fold
+471,476fold
+478,483fold
+485,490fold
+492,497fold
+499,504fold
+506,511fold
+513,518fold
+520,525fold
+527,532fold
+534,539fold
+541,546fold
+435,547fold
+551,576fold
+73,578fold
+580,603fold
+606,635fold
 73
 normal! zo
-117
+154
 normal! zo
-117
-normal! zc
-385
+155
 normal! zo
-385
+171
+normal! zo
+293
+normal! zo
+314
+normal! zo
+388
+normal! zo
+435
+normal! zo
+435
 normal! zc
-73
-normal! zc
-let s:l = 585 - ((559 * winheight(0) + 33) / 67)
+let s:l = 392 - ((73 * winheight(0) + 33) / 67)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-585
-normal! 014|
+392
+normal! 04|
 let &so = s:so_save | let &siso = s:siso_save
 doautoall SessionLoadPost
 " vim: set ft=vim :
