@@ -208,38 +208,77 @@ void _test_user_function() {
 /*void jump_usermode() {
 }*/
 
+#define syscall_exit 0x01
+#define syscall_fork 0x02
+#define syscall_read 0x03
+#define syscall_write   0x04
+#define syscall_open    0x05
+#define syscall_close   0x06
+#define syscall_waitpid 0x07
+#define syscall_creat   0x08
+#define syscall_link    0x09
 
-void syscall_handler(uint32_t a, uint32_t b, uint32_t c, uint32_t d) {
-   //puts("syscall\n");
+#define syscall_unlink  0x0a
+#define syscall_execve  0x0b
+#define syscall_chdir   0x0c
+#define syscall_time    0x0d
+#define syscall_mknod   0x0e
+#define syscall_chmod   0x0f
+#define syscall_lchown16 0x10
+//0x11 not implemented
+#define syscall_stat    0x12
+#define syscall_lseek   0x13
+
+#define syscall_getpid 0x14
+#define syscall_mount 0x15
+#define syscall_oldumount 0x16
+#define syscall_setuid16 0x17
+#define syscall_getuid16 0x18
+#define syscall_stime 0x19
+#define syscall_ptrace 0x1a
+
+
+
+void syscall_handler(uint32_t eax, uint32_t ebx,
+                     uint32_t ecx, uint32_t edx)
+{
+   puts("syscall\n");
    //ASM("popal"); //pushad in intel
    puts("eax: ");
-   print_int(a);
+   print_int(eax);
 
    puts("\nebx: ");
-   print_int(b);
+   print_int(ebx);
 
    puts("\necx: ");
-   print_int(c);
+   print_int(ecx);
 
    puts("\nedx: ");
-   print_int(d);
-
+   print_int(edx);
 
    puts("\n");
 
-/*
-   uint32_t eax;
 
-   __asm__ __volatile__("mov %%eax, %0"
-       : "=r" (eax));
+   switch (eax) {
+      case syscall_exit: {
 
-   putch((char)eax);*/
-   /*putch(a);
-   putch(b);
-   putch(c);
-   puts("\n");*/
+         break;
+      }
+      case syscall_fork: {
 
-   //puts("syscall");
+         break;
+      }
+      case syscall_read: {
+
+         break;
+      }
+      case syscall_write: {
+
+         break;
+      }
+
+   }
+
 
 }
 

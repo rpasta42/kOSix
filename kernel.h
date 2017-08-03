@@ -25,6 +25,33 @@ typedef unsigned int uint32_t;
 #define true 1
 #define false 0
 
+
+/*************************PROC*************************/
+
+struct pde_t {
+
+};
+
+enum proc_state {
+   PROC_RUNNING,
+   PROC_SUSPENDED,
+   PROC_DEAD
+};
+
+struct proc {
+   uint32_t sz;
+   pde_t* pgdir;
+   char* kern_stack;
+   enum proc_state state;
+   volatile int pid;
+   struct proc* parent;
+   struct trapframe* tf; //for system call
+   struct context* context;
+};
+
+/*********************END PROC*************************/
+
+
 /*************************PROTECT*************************/
 void _test_user_function();
 void set_kernel_stack();
